@@ -1,0 +1,146 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard — MiniBlog</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --ink: #1a1a2e; --paper: #f5f0e8; --accent: #c0392b;
+            --muted: #7f8c8d; --border: #d5cfc5; --white: #ffffff;
+        }
+        body { background: var(--paper); font-family: 'DM Sans', sans-serif; min-height: 100vh; display: flex; flex-direction: column; }
+        nav { background: var(--ink); padding: 0 2rem; height: 60px; display: flex; align-items: center; justify-content: space-between; }
+        .nav-brand { font-family: 'Playfair Display', serif; color: var(--paper); font-size: 1.4rem; text-decoration: none; }
+        .nav-brand span { color: var(--accent); }
+        .nav-links { display: flex; align-items: center; gap: 1.2rem; }
+        .nav-links a { color: #bbb; text-decoration: none; font-size: 0.9rem; font-weight: 600; transition: color .2s; }
+        .nav-links a:hover { color: var(--paper); }
+        .nav-user { color: #aaa; font-size: 0.85rem; }
+        .nav-user strong { color: var(--paper); }
+        .btn-nav { background: var(--accent); color: var(--white) !important; padding: 6px 16px; border-radius: 4px; }
+
+        .container { max-width: 900px; margin: 0 auto; padding: 2rem 1.5rem; flex: 1; }
+
+        .page-header {
+            display: flex; align-items: flex-end; justify-content: space-between;
+            margin-bottom: 2rem; padding-bottom: 1rem;
+            border-bottom: 2px solid var(--ink);
+        }
+        .page-header h1 { font-family: 'Playfair Display', serif; font-size: 2.2rem; }
+        .post-count { font-size: 0.85rem; color: var(--muted); font-weight: 600; }
+        .btn-primary {
+            display: inline-block; padding: 9px 20px;
+            background: var(--accent); color: var(--white);
+            border-radius: 6px; text-decoration: none;
+            font-weight: 600; font-size: 0.9rem; transition: background .2s;
+        }
+        .btn-primary:hover { background: #a93226; }
+
+        .posts-grid { display: grid; gap: 1.2rem; }
+        .post-card {
+            background: var(--white); border: 1px solid var(--border);
+            border-radius: 10px; padding: 1.5rem;
+            display: flex; flex-direction: column; gap: 0.6rem;
+            transition: box-shadow .2s, transform .2s;
+        }
+        .post-card:hover { box-shadow: 0 6px 20px rgba(0,0,0,0.1); transform: translateY(-2px); }
+        .post-card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; }
+        .post-card h2 { font-family: 'Playfair Display', serif; font-size: 1.3rem; line-height: 1.3; }
+        .post-card h2 a { color: var(--ink); text-decoration: none; }
+        .post-card h2 a:hover { color: var(--accent); }
+        .badge {
+            font-size: 0.72rem; font-weight: 700; letter-spacing: 0.8px;
+            text-transform: uppercase; padding: 3px 10px; border-radius: 20px; white-space: nowrap;
+        }
+        .badge-published { background: #d5f5e3; color: #1e8449; }
+        .badge-draft { background: #fef9e7; color: #b7950b; }
+        .post-excerpt { color: #555; font-size: 0.9rem; line-height: 1.6; }
+        .post-meta {
+            display: flex; align-items: center; gap: 1.2rem;
+            font-size: 0.8rem; color: var(--muted);
+            padding-top: 0.4rem; border-top: 1px solid var(--border);
+        }
+        .post-meta .author { font-weight: 600; color: var(--ink); }
+        .post-actions { display: flex; gap: 0.6rem; margin-top: 0.3rem; }
+        .btn-sm {
+            padding: 5px 14px; border-radius: 4px; font-size: 0.8rem;
+            font-weight: 600; text-decoration: none; border: none;
+            cursor: pointer; font-family: inherit; transition: all .2s;
+        }
+        .btn-edit { background: var(--paper); color: var(--ink); border: 1px solid var(--border) !important; }
+        .btn-edit:hover { background: var(--border); }
+        .btn-delete { background: #fadbd8; color: var(--accent); border: 1px solid #f1948a !important; }
+        .btn-delete:hover { background: #f1948a; color: var(--white); }
+
+        .empty-state { text-align: center; padding: 3rem 1rem; color: var(--muted); }
+
+        footer { text-align: center; padding: 1rem; font-size: 0.8rem; color: var(--muted); border-top: 1px solid var(--border); }
+    </style>
+</head>
+<body>
+
+<nav>
+    <a href="{% url 'dashboard' %}" class="nav-brand">Mini<span>Blog</span></a>
+    <div class="nav-links">
+        <span class="nav-user">Salom, <strong>{{ request.user.username }}</strong></span>
+        <a href="{% url 'dashboard' %}">Dashboard</a>
+        <a href="{% url 'post_create' %}">+ Yangi Post</a>
+        <form method="post" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" class="btn-nav" style="border:none; cursor:pointer;">Chiqish</button>
+        </form>
+    </div>
+</nav>
+
+<div class="container">
+
+    <div class="page-header">
+        <div>
+            <h1>Barcha postlar</h1>
+            <p class="post-count">Jami: {{ posts.count }} ta post</p>
+        </div>
+        <a href="{% url 'post_create' %}" class="btn-primary">+ Yangi post</a>
+    </div>
+
+    <div class="posts-grid">
+        {% for post in posts %}
+            <div class="post-card">
+                <div class="post-card-top">
+                    <h2><a href="{% url 'post_detail' post.pk %}">{{ post.title }}</a></h2>
+                    {% if post.is_published %}
+                        <span class="badge badge-published">Nashr qilingan</span>
+                    {% else %}
+                        <span class="badge badge-draft">Qoralama</span>
+                    {% endif %}
+                </div>
+                <p class="post-excerpt">{{ post.content|truncatewords:25 }}</p>
+                <div class="post-meta">
+                    <span class="author">{{ post.author.username }}</span>
+                    <span>📅 {{ post.created_at|date:"d.m.Y" }}</span>
+                    <span>👁 {{ post.views }} ko'rilgan</span>
+                </div>
+                {% if post.author == request.user %}
+                    <div class="post-actions">
+                        <a href="{% url 'post_edit' post.pk %}" class="btn-sm btn-edit">✏️ Tahrirlash</a>
+                        <form method="post" action="{% url 'post_delete' post.pk %}" style="display:inline;" onsubmit="return confirm('Rostdan o\'chirasizmi?')">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-sm btn-delete">🗑 O'chirish</button>
+                        </form>
+                    </div>
+                {% endif %}
+            </div>
+        {% empty %}
+            <div class="empty-state">
+                <p>Hozircha postlar yo'q. Birinchi postingizni yarating!</p>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<footer>&copy; 2025 MiniBlog</footer>
+</body>
+</html>

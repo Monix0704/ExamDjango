@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Django bilan web sayt yaratish — MiniBlog</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --ink: #1a1a2e; --paper: #f5f0e8; --accent: #c0392b;
+            --muted: #7f8c8d; --border: #d5cfc5; --white: #ffffff;
+        }
+        body { background: var(--paper); font-family: 'DM Sans', sans-serif; min-height: 100vh; display: flex; flex-direction: column; }
+        nav { background: var(--ink); padding: 0 2rem; height: 60px; display: flex; align-items: center; justify-content: space-between; }
+        .nav-brand { font-family: 'Playfair Display', serif; color: var(--paper); font-size: 1.4rem; text-decoration: none; }
+        .nav-brand span { color: var(--accent); }
+        .nav-links { display: flex; align-items: center; gap: 1.2rem; }
+        .nav-links a { color: #bbb; text-decoration: none; font-size: 0.9rem; font-weight: 600; transition: color .2s; }
+        .nav-links a:hover { color: var(--paper); }
+        .nav-user { color: #aaa; font-size: 0.85rem; }
+        .nav-user strong { color: var(--paper); }
+        .btn-nav { background: var(--accent); color: var(--white) !important; padding: 6px 16px; border-radius: 4px; }
+
+        .container { max-width: 800px; margin: 0 auto; padding: 2rem 1.5rem; flex: 1; }
+
+        .back-link {
+            display: inline-flex; align-items: center; gap: 6px;
+            color: var(--muted); font-size: 0.85rem; text-decoration: none;
+            font-weight: 600; margin-bottom: 2rem; transition: color .2s;
+        }
+        .back-link:hover { color: var(--ink); }
+
+        .post-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.4rem; line-height: 1.2; margin-bottom: 1rem;
+        }
+        .post-header-meta {
+            display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;
+            padding: 1rem 0;
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 1.5rem;
+        }
+        .author-chip { display: flex; align-items: center; gap: 8px; }
+        .author-avatar {
+            width: 36px; height: 36px; border-radius: 50%;
+            background: var(--ink); color: var(--paper);
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 0.9rem;
+        }
+        .author-name { font-weight: 700; font-size: 0.9rem; }
+        .author-date { font-size: 0.78rem; color: var(--muted); }
+        .meta-item { font-size: 0.83rem; color: var(--muted); }
+        .badge { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; }
+        .badge-published { background: #d5f5e3; color: #1e8449; }
+
+        .post-body {
+            background: var(--white); border: 1px solid var(--border);
+            border-radius: 10px; padding: 2.5rem;
+            font-size: 1rem; line-height: 1.8; color: #333;
+            margin-bottom: 1.5rem;
+        }
+        .post-body p { margin-bottom: 1rem; }
+
+        .post-actions-bar {
+            display: flex; gap: 0.8rem;
+            padding: 1rem 0; border-top: 1px solid var(--border);
+            margin-bottom: 2rem;
+        }
+        .btn-edit-post {
+            padding: 9px 20px; background: var(--ink); color: var(--white);
+            border-radius: 6px; text-decoration: none;
+            font-weight: 600; font-size: 0.88rem; transition: background .2s;
+        }
+        .btn-edit-post:hover { background: #2c2c4a; }
+        .btn-delete-post {
+            padding: 9px 20px; background: #fadbd8; color: var(--accent);
+            border: 1px solid #f1948a; border-radius: 6px;
+            font-weight: 600; font-size: 0.88rem; font-family: inherit;
+            cursor: pointer; transition: all .2s;
+        }
+        .btn-delete-post:hover { background: var(--accent); color: var(--white); }
+
+        /* Comments */
+        .comments-section h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem; margin-bottom: 1.5rem;
+        }
+        .comment-form {
+            background: var(--white); border: 1px solid var(--border);
+            border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem;
+        }
+        .comment-form textarea {
+            width: 100%; min-height: 90px; padding: 10px 14px;
+            border: 1.5px solid var(--border); border-radius: 6px;
+            font-family: inherit; font-size: 0.92rem; color: var(--ink);
+            background: var(--paper); resize: vertical; outline: none;
+            transition: border-color .2s; margin-bottom: 0.8rem;
+            display: block;
+        }
+        .comment-form textarea:focus { border-color: var(--ink); }
+        .btn-comment {
+            padding: 8px 20px; background: var(--accent); color: var(--white);
+            border: none; border-radius: 6px;
+            font-weight: 600; font-size: 0.88rem; font-family: inherit;
+            cursor: pointer; transition: background .2s;
+        }
+        .btn-comment:hover { background: #a93226; }
+        .comment-item { padding: 1rem 0; border-bottom: 1px solid var(--border); }
+        .comment-item:last-child { border-bottom: none; }
+        .comment-header { display: flex; justify-content: space-between; margin-bottom: 4px; }
+        .comment-author { font-weight: 700; font-size: 0.88rem; }
+        .comment-date { font-size: 0.76rem; color: var(--muted); }
+        .comment-text { font-size: 0.92rem; color: #444; line-height: 1.6; }
+
+        footer { text-align: center; padding: 1rem; font-size: 0.8rem; color: var(--muted); border-top: 1px solid var(--border); }
+    </style>
+</head>
+<body>
+
+<nav>
+    <a href="index.html" class="nav-brand">Mini<span>Blog</span></a>
+    <div class="nav-links">
+        <span class="nav-user">Salom, <strong>ali_karimov</strong></span>
+        <a href="dashboard.html">Dashboard</a>
+        <a href="create_post.html">+ Yangi Post</a>
+        <a href="login.html" class="btn-nav">Chiqish</a>
+    </div>
+</nav>
+
+<div class="container">
+    <a href="dashboard.html" class="back-link">← Barcha postlar</a>
+
+    <article>
+        <h1 class="post-title">Django bilan web sayt yaratish</h1>
+
+        <div class="post-header-meta">
+            <div class="author-chip">
+                <div class="author-avatar">A</div>
+                <div>
+                    <div class="author-name">ali_karimov</div>
+                    <div class="author-date">12 May 2025</div>
+                </div>
+            </div>
+            <span class="meta-item">👁 128 ko'rilgan</span>
+            <span class="badge badge-published">Nashr qilingan</span>
+        </div>
+
+        <div class="post-body">
+            <p>Django — Python dasturlash tilida yozilgan kuchli va tez rivojlanuvchi web framework. U "batteries included" tamoyiliga asoslanib, dasturchi kerak bo'lgan ko'pgina vositalarni o'z ichiga oladi.</p>
+            <p>Django bilan ishlashni boshlash uchun avval Python o'rnatilgan bo'lishi kerak. So'ngra <code>pip install django</code> buyrug'i orqali Django o'rnatiladi.</p>
+            <p>Yangi loyiha yaratish uchun <code>django-admin startproject myproject</code> buyrug'i ishlatiladi. Bu buyruq asosiy fayl strukturasini avtomatik yaratib beradi.</p>
+            <p>Django'ning eng kuchli tomonlaridan biri — o'rnatilgan admin panel. Faqat bir necha qator kod bilan to'liq ma'muriy interfeys tayyor bo'ladi.</p>
+        </div>
+
+        <div class="post-actions-bar">
+            <a href="create_post.html" class="btn-edit-post">✏️ Tahrirlash</a>
+            <button class="btn-delete-post" onclick="if(confirm('Rostdan o\'chirasizmi?')) window.location='dashboard.html'">🗑 O'chirish</button>
+        </div>
+    </article>
+
+    <!-- COMMENTS -->
+    <section class="comments-section">
+        <h2>Izohlar (2)</h2>
+
+        <div class="comment-form">
+            <form>
+                <textarea placeholder="Fikringizni yozing..."></textarea>
+                <button type="submit" class="btn-comment">Izoh qoldirish</button>
+            </form>
+        </div>
+
+        <div class="comment-item">
+            <div class="comment-header">
+                <span class="comment-author">sardor_dev</span>
+                <span class="comment-date">13.05.2025 14:30</span>
+            </div>
+            <p class="comment-text">Juda foydali post! Django haqida ko'proq ma'lumot bersangiz yaxshi bo'lardi.</p>
+        </div>
+
+        <div class="comment-item">
+            <div class="comment-header">
+                <span class="comment-author">malika_uz</span>
+                <span class="comment-date">13.05.2025 16:45</span>
+            </div>
+            <p class="comment-text">Rahmat! Men ham shu mavzuni o'rganayapman, juda tushunarli yozibsiz.</p>
+        </div>
+    </section>
+</div>
+
+<footer>&copy; 2025 MiniBlog</footer>
+</body>
+</html>

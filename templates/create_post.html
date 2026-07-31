@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yangi post — MiniBlog</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --ink: #1a1a2e; --paper: #f5f0e8; --accent: #c0392b;
+            --muted: #7f8c8d; --border: #d5cfc5; --white: #ffffff;
+        }
+        body { background: var(--paper); font-family: 'DM Sans', sans-serif; min-height: 100vh; display: flex; flex-direction: column; }
+        nav { background: var(--ink); padding: 0 2rem; height: 60px; display: flex; align-items: center; justify-content: space-between; }
+        .nav-brand { font-family: 'Playfair Display', serif; color: var(--paper); font-size: 1.4rem; text-decoration: none; }
+        .nav-brand span { color: var(--accent); }
+        .nav-links { display: flex; align-items: center; gap: 1.2rem; }
+        .nav-links a { color: #bbb; text-decoration: none; font-size: 0.9rem; font-weight: 600; transition: color .2s; }
+        .nav-links a:hover { color: var(--paper); }
+        .nav-user { color: #aaa; font-size: 0.85rem; }
+        .nav-user strong { color: var(--paper); }
+        .btn-nav { background: var(--accent); color: var(--white) !important; padding: 6px 16px; border-radius: 4px; }
+
+        .container { max-width: 900px; margin: 0 auto; padding: 2rem 1.5rem; flex: 1; }
+
+        .page-header {
+            margin-bottom: 2rem; padding-bottom: 1rem;
+            border-bottom: 2px solid var(--ink);
+        }
+        .page-header h1 { font-family: 'Playfair Display', serif; font-size: 2rem; }
+
+        .post-form-card {
+            background: var(--white); border: 1px solid var(--border);
+            border-radius: 12px; padding: 2rem; max-width: 700px;
+        }
+        .form-group { margin-bottom: 1.4rem; }
+        .form-group label {
+            display: block; font-size: 0.85rem; font-weight: 700;
+            color: var(--ink); letter-spacing: 0.4px;
+            margin-bottom: 7px; text-transform: uppercase;
+        }
+        .form-group input[type="text"],
+        .form-group textarea,
+        .form-group select {
+            width: 100%; padding: 11px 14px;
+            border: 1.5px solid var(--border); border-radius: 6px;
+            font-size: 0.95rem; font-family: inherit;
+            color: var(--ink); background: var(--paper);
+            outline: none; transition: border-color .2s;
+        }
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus { border-color: var(--ink); background: var(--white); }
+        .form-group textarea { min-height: 220px; resize: vertical; line-height: 1.7; }
+        .hint { font-size: 0.78rem; color: var(--muted); margin-top: 4px; }
+        .char-counter { text-align: right; font-size: 0.78rem; color: var(--muted); margin-top: 4px; }
+        .char-counter.warn { color: #e67e22; }
+        .char-counter.over { color: var(--accent); }
+
+        /* Toggle */
+        .toggle-group {
+            display: flex; align-items: center; gap: 14px;
+            padding: 12px 16px; background: var(--paper);
+            border: 1px solid var(--border); border-radius: 8px;
+        }
+        .toggle-label { font-size: 0.9rem; font-weight: 600; }
+        .toggle-desc { font-size: 0.78rem; color: var(--muted); }
+        .switch { position: relative; display: inline-block; width: 46px; height: 26px; flex-shrink: 0; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: #ccc; border-radius: 26px; transition: .3s; }
+        .slider::before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: .3s; }
+        .switch input:checked + .slider { background: #27ae60; }
+        .switch input:checked + .slider::before { transform: translateX(20px); }
+
+        .form-actions {
+            display: flex; gap: 1rem; align-items: center;
+            padding-top: 1.5rem; border-top: 1px solid var(--border); margin-top: 1rem;
+        }
+        .btn-save {
+            padding: 11px 28px; background: var(--ink); color: var(--white);
+            border: none; border-radius: 6px; font-size: 1rem;
+            font-weight: 600; font-family: inherit; cursor: pointer; transition: background .2s;
+        }
+        .btn-save:hover { background: #2c2c4a; }
+        .btn-cancel {
+            padding: 11px 20px; background: transparent; color: var(--muted);
+            border: 1px solid var(--border); border-radius: 6px;
+            font-size: 0.95rem; font-weight: 600; text-decoration: none;
+            font-family: inherit; cursor: pointer; transition: all .2s;
+        }
+        .btn-cancel:hover { color: var(--ink); border-color: var(--ink); }
+
+        footer { text-align: center; padding: 1rem; font-size: 0.8rem; color: var(--muted); border-top: 1px solid var(--border); }
+    </style>
+</head>
+<body>
+
+<nav>
+    <a href="index.html" class="nav-brand">Mini<span>Blog</span></a>
+    <div class="nav-links">
+        <span class="nav-user">Salom, <strong>ali_karimov</strong></span>
+        <a href="dashboard.html">Dashboard</a>
+        <a href="create_post.html">+ Yangi Post</a>
+        <a href="login.html" class="btn-nav">Chiqish</a>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="page-header">
+        <h1>📝 Yangi post yozish</h1>
+    </div>
+
+    <div class="post-form-card">
+        <form action="dashboard.html" method="GET">
+
+            <div class="form-group">
+                <label for="title">Sarlavha</label>
+                <input type="text" id="title" name="title"
+                       placeholder="Postingiz sarlavhasini kiriting..."
+                       maxlength="200" required autofocus>
+            </div>
+
+            <div class="form-group">
+                <label for="content">Mazmun</label>
+                <textarea id="content" name="content"
+                          placeholder="Post mazmunini yozing..."
+                          maxlength="5000" required
+                          oninput="updateCounter(this)"></textarea>
+                <div class="char-counter" id="counter">0 / 5000</div>
+            </div>
+
+            <div class="form-group">
+                <label>Holati</label>
+                <div class="toggle-group">
+                    <label class="switch">
+                        <input type="checkbox" name="is_published" id="is_published">
+                        <span class="slider"></span>
+                    </label>
+                    <div>
+                        <div class="toggle-label">Nashr qilish</div>
+                        <div class="toggle-desc">Yoqilsa — post hammaga ko'rinadi, o'chirilsa — qoralama</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn-save">Post yaratish →</button>
+                <a href="dashboard.html" class="btn-cancel">Bekor qilish</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<footer>&copy; 2025 MiniBlog</footer>
+
+<script>
+function updateCounter(textarea) {
+    const counter = document.getElementById('counter');
+    const len = textarea.value.length;
+    counter.textContent = len + ' / 5000';
+    counter.className = 'char-counter';
+    if (len > 4500) counter.classList.add('warn');
+    if (len >= 5000) counter.classList.add('over');
+}
+</script>
+</body>
+</html>
