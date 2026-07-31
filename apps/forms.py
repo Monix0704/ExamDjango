@@ -11,8 +11,8 @@ class RegisterForm(forms.Form):
     last_name = forms.CharField(max_length=255)
     username = forms.CharField(max_length=300)
     email = forms.EmailField(max_length=300)
-    password = forms.PasswordInput()
-    password2 = forms.PasswordInput()
+    password = forms.CharField(widget=forms.PasswordInput)
+    password2 = forms.CharField(widget=forms.PasswordInput)
 
     def clean(self):
         cleaned_data = super().clean()
@@ -28,13 +28,13 @@ class RegisterForm(forms.Form):
             Q(username=username) | Q(email=email)
         )
         if query.exists():
-            ValidationError('User already exists')
+            raise ValidationError('User already exists')
 
         if password2 != password:
-            ValidationError('Passwords do not match')
+            raise ValidationError('Passwords do not match')
 
         if len(str(password)) < 8:
-            ValidationError('Password should contain at least 8 characters')
+            raise ValidationError('Password should contain at least 8 characters')
 
         user = User.objects.create_user(
             first_name=first_name,
@@ -92,7 +92,7 @@ class PostModelForm(forms.ModelForm):
         content = self.cleaned_data.get('content')
 
         if not title or not content:
-            ValidationError('Title or Content is missing')
+            raise ValidationError('Title or Content is missing')
 
 
         if commit:

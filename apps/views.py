@@ -9,25 +9,30 @@ from apps.forms import RegisterForm, LoginForm, PostModelForm, CommentModelForm
 from apps.models import *
 
 
-class RegisterFormView(LoginRequiredMixin, FormView):
+class RegisterFormView(FormView):
     template_name = 'register.html'
     success_url = reverse_lazy('login')
     form_class = RegisterForm
 
     def form_valid(self, form):
         user = form.cleaned_data['user']
-        authenticate(user)
+        login(self.request, user)
         return super().form_valid(form)
 
-class LoginFormView(LoginRequiredMixin, FormView):
+class LoginFormView(FormView):
     template_name = 'login.html'
     success_url = reverse_lazy('home')
     form_class = LoginForm
 
     def form_valid(self, form):
-        user = form.cleaned_data['user']
+        print("VALID")
+        user = form.cleaned_data["user"]
         login(self.request, user)
         return super().form_valid(form)
+
+    def form_invalid(self, form):
+        print(form.errors)
+        return super().form_invalid(form)
 
 
 def logout_view(request):
