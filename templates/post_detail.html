@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Django bilan web sayt yaratish — MiniBlog</title>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@400;500;600&display=swap"
+          rel="stylesheet">
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         :root {
@@ -116,21 +117,22 @@
 
         footer { text-align: center; padding: 1rem; font-size: 0.8rem; color: var(--muted); border-top: 1px solid var(--border); }
     </style>
+    
 </head>
 <body>
 
 <nav>
-    <a href="index.html" class="nav-brand">Mini<span>Blog</span></a>
+    <a href="{% url 'home' %}" class="nav-brand">Mini<span>Blog</span></a>
     <div class="nav-links">
         <span class="nav-user">Salom, <strong>ali_karimov</strong></span>
-        <a href="dashboard.html">Dashboard</a>
-        <a href="create_post.html">+ Yangi Post</a>
-        <a href="login.html" class="btn-nav">Chiqish</a>
+        <a href="{% url 'home' %}">Dashboard</a>
+        <a href="{% url 'create-post' %}">+ Yangi Post</a>
+        <a href="{% url 'logout' %}" class="btn-nav">Chiqish</a>
     </div>
 </nav>
 
 <div class="container">
-    <a href="dashboard.html" class="back-link">← Barcha postlar</a>
+    <a href="{% url 'home' %}" class="back-link">← Barcha POSTLAR</a>
 
     <article>
         <h1 class="post-title">Django bilan web sayt yaratish</h1>
@@ -139,24 +141,30 @@
             <div class="author-chip">
                 <div class="author-avatar">A</div>
                 <div>
-                    <div class="author-name">ali_karimov</div>
-                    <div class="author-date">12 May 2025</div>
+                    <div class="author-name">{{ post.author.username }}</div>
+                    <div class="author-date">{{ post.created_at }}</div>
                 </div>
             </div>
-            <span class="meta-item">👁 128 ko'rilgan</span>
-            <span class="badge badge-published">Nashr qilingan</span>
+            <span class="meta-item">👁 {{ post.views }} ko'rilgan</span>
+            {% if post.is_published %}
+                <span class="badge badge-published">Nashr qilingan</span>
+            {% else %}
+                <span class="badge badge">Nashr qilinmagan</span>
+            {% endif %}
         </div>
 
         <div class="post-body">
-            <p>Django — Python dasturlash tilida yozilgan kuchli va tez rivojlanuvchi web framework. U "batteries included" tamoyiliga asoslanib, dasturchi kerak bo'lgan ko'pgina vositalarni o'z ichiga oladi.</p>
-            <p>Django bilan ishlashni boshlash uchun avval Python o'rnatilgan bo'lishi kerak. So'ngra <code>pip install django</code> buyrug'i orqali Django o'rnatiladi.</p>
-            <p>Yangi loyiha yaratish uchun <code>django-admin startproject myproject</code> buyrug'i ishlatiladi. Bu buyruq asosiy fayl strukturasini avtomatik yaratib beradi.</p>
-            <p>Django'ning eng kuchli tomonlaridan biri — o'rnatilgan admin panel. Faqat bir necha qator kod bilan to'liq ma'muriy interfeys tayyor bo'ladi.</p>
+            <p>{{ post.content }}</p>
         </div>
 
         <div class="post-actions-bar">
-            <a href="create_post.html" class="btn-edit-post">✏️ Tahrirlash</a>
-            <button class="btn-delete-post" onclick="if(confirm('Rostdan o\'chirasizmi?')) window.location='dashboard.html'">🗑 O'chirish</button>
+            <a href="{% url 'create-post' %}" class="btn-edit-post">✏️ Tahrirlash</a>
+            <form action="{% url 'delete-post' post.id %}" method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn-delete-post"
+                        onclick="if(confirm('Rostdan o\'chirasizmi?')) window.location='{% url 'home' %}'">🗑 O'chirish
+                </button>
+            </form>
         </div>
     </article>
 
@@ -165,27 +173,24 @@
         <h2>Izohlar (2)</h2>
 
         <div class="comment-form">
-            <form>
-                <textarea placeholder="Fikringizni yozing..."></textarea>
+            <form action="{% url 'create-comment' post.id %}" method="post">
+                {% csrf_token %}
+                <textarea name="content" placeholder="Fikringizni yozing..."></textarea>
                 <button type="submit" class="btn-comment">Izoh qoldirish</button>
             </form>
         </div>
 
-        <div class="comment-item">
+       {% for comment in comments %}
+            <div class="comment-item">
             <div class="comment-header">
-                <span class="comment-author">sardor_dev</span>
-                <span class="comment-date">13.05.2025 14:30</span>
+                <span class="comment-author">{{ comment.author.username }}</span>
+                <span class="comment-date">{{ comment.created_at }}</span>
             </div>
-            <p class="comment-text">Juda foydali post! Django haqida ko'proq ma'lumot bersangiz yaxshi bo'lardi.</p>
+            <p class="comment-text">{{ comment.content }}</p>
         </div>
 
-        <div class="comment-item">
-            <div class="comment-header">
-                <span class="comment-author">malika_uz</span>
-                <span class="comment-date">13.05.2025 16:45</span>
-            </div>
-            <p class="comment-text">Rahmat! Men ham shu mavzuni o'rganayapman, juda tushunarli yozibsiz.</p>
-        </div>
+       {% endfor %}
+
     </section>
 </div>
 
